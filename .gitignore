@@ -1,0 +1,72 @@
+# ======================
+# SYSTEM FILES
+# ======================
+.DS_Store
+Thumbs.db
+*.log
+
+# ======================
+# ENV FILES
+# ======================
+.env
+.env.local
+.env.*.local
+
+# ======================
+# NODE JS
+# ======================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+build/
+coverage/
+
+# ======================
+# JAVA / SPRING / MAVEN / GRADLE
+# ======================
+target/
+*.class
+*.jar
+*.war
+*.ear
+.idea/
+*.iml
+.gradle/
+build/
+
+# ======================
+# PHP / LARAVEL
+# ======================
+vendor/
+storage/logs/
+storage/framework/
+bootstrap/cache/
+.env
+
+# ======================
+# VUE / FRONTEND
+# ======================
+dist/
+.nuxt/
+.next/
+
+# ======================
+# IDE
+# ======================
+.vscode/
+.idea/
+*.swp
+
+# ======================
+# DATABASE / LOCAL
+# ======================
+*.sqlite
+*.db
+
+# ======================
+# BACKUP FILES
+# ======================
+*.bak
+*.backup

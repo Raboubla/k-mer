@@ -1,0 +1,136 @@
+0- Apprendre
+    - FASTQ et FASTA
+    - K-mers
+    - notrion de read (fragment d'adn)
+    - principe de chevauchement (overlap)
+    - notion de graphe de De Bruijn (concept)
+
+Objectif : comprendre “ce que tu manipules”
+
+1. Module d’ingestion + k-mers
+
+Objectif : Lire les fichiers ADN et les découper en morceaux.
+
+    - Lire FASTQ
+        - parser fichier
+        - extraire :
+            - sequence d'adn
+            - score de qualité
+    - filtrer qualite
+        - enlever bases ou reads trop mauvais
+    - Convertir FASTQ → FASTA (option)
+        - garder uniquement séquences
+    - Générer k-mers
+        - ATGCGT → ATG, TGC, GCG, CGT
+    - Compter fréquence des k-mers
+        - hash map : k-mer → fréquence recommender
+
+outpout attendu :
+    - liste de k-mers
+    - fréquence de chaque k-mer
+
+2. Module d’alignement (Programmation dynamique)
+
+Objectif : Trouver les chevauchements entre les reads.
+
+    - Implémenter LCS ou alignment :
+        type :
+            Longest Common Subsequence
+            OU
+            Smith-Waterman (bonus)
+    - retourner :
+        score de similarité
+        zone de match
+    - Interface simple :
+        input 2 reads
+        output alignement lisible
+
+output attendu :
+    READ1: ATGCGT
+    READ2: ATGACGT
+    Score: 5
+    Overlap: positions 2-6
+
+3. Moteur d’assemblage (le cœur du projet)
+Objectif : AReconstituer la séquence sans graphe complet.
+
+    - filtre de Bloom 
+        - cree structure Bloom filter
+        - ajouter k-mers frequents ("solide")
+        - fonctions :
+            add(kmer)
+            contains(kmer)
+            Paramètres à définir :
+            taille bitset (m)
+            nombre hash functions (k)
+    - filtrer k-mers solides
+        calculer fréquence
+        garder seulement ceux > seuil
+    - Traversée “on-the-fly”
+        Algorithme :
+            choisir seed (k-mer de départ)
+            générer 4 extensions :
+                                    A
+                                    C
+                                    G
+                                    T
+            tester dans Bloom filter
+            si valide → continuer
+            sinon → stop
+            si plusieurs choix → bifurcation
+
+    - Générer contigs : chaque chemin = une séquence reconstruite
+
+output attendu : plusieurs contigs ADN
+
+4. Analyse critique (très important pour note)
+🎯 Objectif : Expliquer les performances et erreurs
+
+✔️ À faire
+        1. Complexité mémoire
+            Bloom filter vs HashSet
+        2. Faux positifs
+            expliquer chemins fantômes
+        3. Impact des paramètres
+            m (taille bitset)
+            k (hash functions)
+        4. Impact du k-mer size
+            petit k → bruit
+            grand k → fragmentation
+
+
+🧪 5. Test avec dataset simple
+✔️ À faire
+    utiliser séquence connue
+    découper en reads artificiels
+    reconstruire
+    comparer résultat
+🎯 objectif : identité > 98%
+
+🟣 6. Interface (optionnel mais bonus)
+    upload FASTQ
+    bouton “run pipeline”
+    affichage :
+        k-mers
+        alignements
+        contigs
+
+
+Architecture globale :
+    FASTQ
+    ↓
+    [Module 1: parsing + k-mers]
+    ↓
+    [Module 2: alignement DP]
+    ↓
+    [Module 3: Bloom filter + assembly]
+    ↓
+    Contigs (résultat ADN)
+
+⚡ Résumé ultra simple
+    👉 Tu dois faire :
+            lire ADN
+            découper en morceaux
+            comparer morceaux
+            reconstruire séquence
+            analyser erreurs
