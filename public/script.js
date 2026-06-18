@@ -44,6 +44,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: formData
             });
             const data = await response.json();
+
+            // mis en local storage de histogram :
+            if (data.success) {
+                // 🔥 STOCKAGE LOCAL STORAGE
+                localStorage.setItem(
+                    "histogram",
+                    JSON.stringify(data.histogram)
+                );
+
+                console.log("Histogram sauvegardé !");
+            }
             // Affichage formaté JSON
             resultBox.innerHTML = `<strong>Réponse du Serveur :</strong>\n\n${JSON.stringify(data, null, 2)}`;
         } catch (error) {
@@ -81,11 +92,24 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('form-lot3').addEventListener('submit', async (e) => {
         e.preventDefault();
         const resultBox = document.getElementById('result-lot3');
-        resultBox.innerHTML = '<p class="placeholder-text">Assemblage Minia 2 en cours (Mock)...</p>';
+        
+        // Récupérer l'histogramme stocké lors du Lot 1
+        const histogramStr = localStorage.getItem("histogram");
+        if (!histogramStr) {
+            resultBox.innerHTML = '<p style="color: red;">Aucun histogramme trouvé. Veuillez d\'abord exécuter l\'analyse du Lot 1.</p>';
+            return;
+        }
+
+        const frequencies = JSON.parse(histogramStr);
+        const threshold = document.getElementById('threshold').value;
+
+        resultBox.innerHTML = '<p class="placeholder-text">Assemblage Minia 2 en cours...</p>';
 
         try {
             const response = await fetch('/api/lot3/assemble', {
-                method: 'POST'
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ frequencies, threshold })
             });
             const data = await response.json();
             resultBox.innerHTML = `<strong>Réponse du Serveur :</strong>\n\n${JSON.stringify(data, null, 2)}`;

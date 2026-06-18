@@ -10,16 +10,23 @@ function parseFastq(filePath) {
     const lines = content.split(/\r?\n/);
     const sequences = [];
     
-    // Dans un fichier FASTQ standard, les données d'un "read" tiennent sur 4 lignes :
-    // Ligne 1 : Identifiant (commence par @)
-    // Ligne 2 : Séquence d'ADN
-    // Ligne 3 : Séparateur (commence par +)
-    // Ligne 4 : Qualité
-    // On extrait donc la ligne 2, puis la ligne 6, 10, etc.
-    for (let i = 1; i < lines.length; i += 4) {
-        const seq = lines[i].trim();
-        if (seq) {
-            sequences.push(seq);
+    let state = 0; // 0: ID, 1: Séquence, 2: Séparateur (+), 3: Qualité
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        // Ignorer les lignes vides accidentelles
+        if (line === '') continue; 
+        
+        if (state === 0 && line.startsWith('@')) {
+            state = 1; // On a trouvé l'identifiant, on attend la séquence
+        } else if (state === 1) {
+            sequences.push(line); // On sauvegarde la séquence
+            state = 2; // On attend le '+'
+        } else if (state === 2 && line.startsWith('+')) {
+            state = 3; // On a trouvé le '+', on attend la ligne de qualité
+        } else if (state === 3) {
+            state = 0; // On a lu la qualité, on repart à zéro pour le read suivant
         }
     }
     
@@ -35,13 +42,13 @@ function parseFastq(filePath) {
  */
 function getKmersFrequencies(sequences, k) {
     const frequencies = {};
-    
+
     // On parcourt chaque read (séquence)
     for (const seq of sequences) {
         // On fait glisser une fenêtre de taille k sur la séquence
         for (let i = 0; i <= seq.length - k; i++) {
             const kmer = seq.substring(i, i + k);
-            
+
             // Si le kmer existe déjà dans le dico, on incrémente, sinon on le crée à 1
             if (frequencies[kmer]) {
                 frequencies[kmer]++;
@@ -50,8 +57,6 @@ function getKmersFrequencies(sequences, k) {
             }
         }
     }
-    
     return frequencies;
 }
-
 module.exports = { parseFastq, getKmersFrequencies };

@@ -33,23 +33,23 @@ const upload = multer({ dest: 'uploads/' });
 // Lot 1 : Ingestion et de Qualité
 app.post('/api/lot1/process', upload.single('fastqFile'), (req, res) => {
     const k = parseInt(req.body.k) || 3;
-    
+
     try {
         if (!req.file) throw new Error("Aucun fichier fourni.");
-        
+
         const filePath = req.file.path;
-        
+
         // Appel aux fonctions du Lot 1
         const sequences = lot1.parseFastq(filePath);
         const frequencies = lot1.getKmersFrequencies(sequences, k);
-        
+
         // Nettoyage : On pourrait supprimer le fichier après traitement (optionnel)
         // fs.unlinkSync(filePath);
 
         res.json({
             success: true,
             message: `Fichier analysé. ${sequences.length} séquences extraites.`,
-            histogram: frequencies 
+            histogram: frequencies
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -59,7 +59,7 @@ app.post('/api/lot1/process', upload.single('fastqFile'), (req, res) => {
 // Lot 2 : Alignement par Programmation Dynamique
 app.post('/api/lot2/align', (req, res) => {
     const { seq1, seq2 } = req.body;
-    
+
     if (!seq1 || !seq2) {
         return res.status(400).json({ success: false, message: "Les deux séquences sont requises." });
     }
@@ -67,7 +67,7 @@ app.post('/api/lot2/align', (req, res) => {
     try {
         // Appel à la fonction du Lot 2
         const result = lot2.calculateLCS(seq1.toUpperCase(), seq2.toUpperCase());
-        
+
         res.json({
             success: true,
             message: "Alignement LCS effectué.",
@@ -81,24 +81,24 @@ app.post('/api/lot2/align', (req, res) => {
 
 // Lot 3 : Assemblage Minia 2
 app.post('/api/lot3/assemble', (req, res) => {
-    // Dans un vrai pipeline, on garderait l'état depuis le Lot 1.
-    // Ici, pour la démo, on simule un dictionnaire de fréquences de k-mers solides.
-    const mockFrequencies = {
-        "ATCG": 10, "TCGG": 12, "CGGC": 8, "GGCT": 9, "GCTA": 11,
-        "CTAT": 15, "TATA": 2, // Erreur de lecture (fréquence trop basse)
-        "ATCC": 1  // Erreur de lecture
-    };
-    
     try {
-        const k = 4;
-        const threshold = 5; // Fréquence min pour être "solide"
+        const frequencies = req.body.frequencies;
+        const threshold = parseInt(req.body.threshold) || 2;
+        
+        if (!frequencies || Object.keys(frequencies).length === 0) {
+            return res.status(400).json({ success: false, message: "L'histogramme des fréquences est manquant ou vide." });
+        }
+        
+        // Déduire k de la taille du premier k-mer
+        const firstKmer = Object.keys(frequencies)[0];
+        const k = firstKmer ? firstKmer.length : 3;
         
         // Appel à la fonction d'assemblage du Lot 3
-        const contigs = lot3.assembleMinia(mockFrequencies, k, threshold);
+        const contigs = lot3.assembleMinia(frequencies, k, threshold);
         
         res.json({
             success: true,
-            message: "Assemblage Minia 2 terminé (basé sur un dictionnaire mocké pour la démo).",
+            message: "Assemblage Minia 2 terminé.",
             contigs: contigs
         });
     } catch (error) {
@@ -108,5 +108,5 @@ app.post('/api/lot3/assemble', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`\n🚀 Serveur démarré sur http://localhost:${PORT}`);
-    console.log(`Ouvrez ce lien dans votre navigateur.`);
+    console.log(`Sokafy ao amin'ny navigateur lesy a !`);
 });

@@ -70,6 +70,10 @@
                 <h2>Assemblage "Memory-Efficient"</h2>
                 <p class="info-text">Lance l'assemblage Minia 2 basé sur le Filtre de Bloom.</p>
                 <form id="form-lot3">
+                    <div class="input-group">
+                        <label for="threshold">Seuil de fréquence (k-mers "solides") :</label>
+                        <input type="number" id="threshold" value="2" min="1" max="1000">
+                    </div>
                     <button type="submit" class="btn primary">Lancer l'Assemblage</button>
                 </form>
                 <div class="result-box" id="result-lot3">
